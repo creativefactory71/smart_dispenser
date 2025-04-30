@@ -1,0 +1,40 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+title Smart Medicine Reminder Workflow (Refill + Operation Mode)
+
+start
+
+:Start System;
+if (Mode Selected?) then (Refill Mode)
+  :Enter Refill Mode;
+  :App sends \nbox assignment data;
+  :ESP32 receives box-med mapping;
+  :Store medicine names in flash;
+  :Update stock count;
+  :Display box & medicine info;
+  :Send confirmation to app;
+  stop
+else (Operation Mode)
+  :Enter Operation Mode;
+  :Fetch schedule from cloud;
+  :Monitor RTC for schedule match;
+  if (Time to dispense?) then (Yes)
+    :Get box linked to medicine;
+    :Check stock;
+    if (Stock > 0?) then (Yes)
+      :Activate dispenser motor;
+      :Buzz + Display info;
+      :Decrease stock count;
+      :Log status & update cloud;
+    else (No)
+      :Send low stock alert to app;
+    endif
+  else (No)
+    :Wait and check again;
+  endif
+endif
+
+stop
+@enduml
