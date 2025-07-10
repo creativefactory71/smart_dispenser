@@ -11,5 +11,7 @@
 #define USER_BUTTON_PIN         12
 
 void initPins();  // Initializes all defined GPIOs
-
+void toggleLEDNonBlocking(int pin, unsigned long interval);
+void commandConfirmationBlink(int pin, volatile bool* flag);
+// Non-blocking LED toggle function
 #endif

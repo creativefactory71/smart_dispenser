@@ -8,7 +8,7 @@
 #include "wifi_handler.h"
 #include "mqtt_handler.h"
 #include "fsm_device.h"
-// #include "pinmap.h"
+#include "pinmap.h"
 // #include "time_sync.h"
 
 // #include "communication.h" // Include the header file for SmartMedicineReminder
@@ -84,14 +84,24 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Starting Smart Medicine Reminder...");
-  delay(1000); // Give time for Serial Monitor to open
+  pinMode(LED_BUILTIN, OUTPUT); // Initialize built-in LED for status indication
+  digitalWrite(LED_BUILTIN, LOW); // Turn off LED initially
+  for(int i = 0; i < 10; i++) {
+    digitalWrite(LED_BUILTIN, HIGH); // Turn on LED
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW); // Turn off LED
+    delay(100);
+  } 
+  //delay(1000); // Give time for Serial Monitor to open
   // Initialize all hardware
   // initPins();
 
 
   connectToWiFi();
-  FSMDevice::init();
   setupMQTT();
+  Serial.println("✅ WiFi and MQTT setup complete!");
+  FSMDevice::init();
+  
 }
 
 void loop() {
@@ -140,13 +150,14 @@ void loop() {
 
   mqttLoop();
 
- publishStatusPeriodically();
+  publishStatusPeriodically();
+  //toggleLEDNonBlocking(LED_BUILTIN, 500); // Toggle LED every 500ms
+  commandConfirmationBlink(LED_BUILTIN, &cmdConfirmFlag); // Blink LED for command confirmation
+  // FSMDevice::update();     // Update FSM state machine
 
-  FSMDevice::update();     // Update FSM state machine
-
-  // User acknowledgment button
-  if (digitalRead(12) == LOW) {
-    FSMDevice::handleUserAcknowledge();
-    delay(300); // debounce
-  }
+  // // User acknowledgment button
+  // if (digitalRead(12) == HIGH) {
+  //   FSMDevice::handleUserAcknowledge();
+  //   delay(300); // debounce
+  // }
 }

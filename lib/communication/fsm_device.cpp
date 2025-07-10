@@ -9,6 +9,17 @@ static SmartMessage cachedMsg;
 
 namespace FSMDevice {
 
+  // Function to print a message at user-defined intervals (non-blocking)
+void printEvery(const char* message, unsigned long interval) {
+  static unsigned long previousMillis = 0;
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    Serial.println(message);
+  }
+}
+
   const char* fsm_state_to_string(DeviceState state) {
     switch (state) {
       case IDLE: return "IDLE";
@@ -36,8 +47,10 @@ namespace FSMDevice {
   }
 
   void update() {
-    Serial.print("FSM State: ");
-Serial.println(fsm_state_to_string(currentState));
+//     Serial.print("FSM State: ");
+// Serial.println(fsm_state_to_string(currentState));
+    printEvery(fsm_state_to_string(currentState), 1000); // Print every second
+//     Serial.print("Current State: ");
 
     switch (currentState) {
       case IDLE:
@@ -95,6 +108,7 @@ Serial.println(fsm_state_to_string(currentState));
       DeviceOperations::stopBuzzer();
       transitionTo(IDLE);
     }
+    Serial.println("🔔 User acknowledged the buzzer.");
   }
 
   DeviceState getCurrentState() {

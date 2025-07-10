@@ -1,7 +1,9 @@
 // ========== mqtt_handler.cpp ==========
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include<mqtt_handler.h>
 #include <smart_reminder.h>
+#include <fsm_device.h>
 #include "isrg_root_x1.h"
 
 WiFiClientSecure secureClient;
@@ -14,6 +16,11 @@ const int mqtt_port = 8883;
 const char* mqtt_user = "creativefactory";
 const char* mqtt_password = "Creative24";
 
+
+
+volatile bool cmdConfirmFlag = false; // Set this to true whenever you want to blink
+// the LED for command confirmation
+
 void callback(char* topic, byte* payload, unsigned int length) {
   String incomingBuffer = "";
   for (unsigned int i = 0; i < length; i++) {
@@ -21,13 +28,54 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 
   Serial.println("Received JSON:");
-  Serial.println(incomingBuffer);
+  //Serial.println(incomingBuffer);
 
   SmartMessage msg = SmartMedicineReminder::parseFromJson(incomingBuffer);
-  if (msg.payload.schedule_count > 0) {
-    Serial.println("Received medicine:");
-    Serial.println(msg.payload.schedule[0].medicine_name);
-  }
+  // if (msg.payload.schedule_count > 0) {
+  //   Serial.println("Received medicine:");
+  //   Serial.println(msg.payload.schedule[0].medicine_name);
+  // }
+
+// ----- Print Header -----
+Serial.println("🔷 Header:");
+Serial.println("  Sender: " + msg.header.sender);
+Serial.println("  Device ID: " + msg.header.device_id);
+Serial.println("  Message Type: " + msg.header.message_type);
+Serial.println("  Mode: " + msg.header.mode);
+Serial.println("  Timestamp: " + msg.header.timestamp);
+Serial.println("  Version: " + msg.header.version);
+
+// ----- Print Schedule -----
+Serial.println("📋 Schedule Entries:");
+for (int i = 0; i < msg.payload.schedule_count; i++) {
+  Serial.printf("  [%d] Medicine: %s, Time: %s\n",
+                i,
+                msg.payload.schedule[i].medicine_name.c_str(),
+                msg.payload.schedule[i].time.c_str());
+}
+
+// ----- Print Status -----
+Serial.println("📦 Status:");
+Serial.println("  Mode: " + msg.payload.status.mode);
+Serial.println("  Result: " + msg.payload.status.result);
+Serial.println("  Schedule ID: " + msg.payload.status.schedule_id);
+Serial.println("  Battery: " + String(msg.payload.status.battery));
+Serial.println("  Timestamp: " + msg.payload.status.timestamp);
+
+Serial.println("  Stock Remaining:");
+for (int j = 0; j < msg.payload.status.stock_remaining_count; j++) {
+  Serial.printf("    Box %d: %d remaining\n",
+                msg.payload.status.stock_remaining[j].first,
+                msg.payload.status.stock_remaining[j].second);
+}
+
+Serial.println("✅ Done parsing SmartMessage.\n");
+
+cmdConfirmFlag = true; // Set flag to true to trigger LED blink
+digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); // Toggle LED to indicate message received
+// Process the incoming instruction using FSM
+FSMDevice::processIncomingInstruction(msg); // Call FSM to handle the message  
+
 }
 
 void reconnect() {
@@ -56,7 +104,8 @@ void mqttLoop() {
 }
 
 void publishStatusPeriodically() {
-    if (millis() - lastStatus > 10000) {
+    
+    if (millis() - lastStatus > 10000) { //10s
       SmartMessage statusMsg;
       statusMsg.header.sender = "care_001";
       statusMsg.header.device_id = "abc123";
