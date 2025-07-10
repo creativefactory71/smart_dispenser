@@ -84,7 +84,8 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Starting Smart Medicine Reminder...");
-  pinMode(LED_BUILTIN, OUTPUT); // Initialize built-in LED for status indication
+  initPins();
+  
   digitalWrite(LED_BUILTIN, LOW); // Turn off LED initially
   for(int i = 0; i < 10; i++) {
     digitalWrite(LED_BUILTIN, HIGH); // Turn on LED
@@ -94,7 +95,7 @@ void setup() {
   } 
   //delay(1000); // Give time for Serial Monitor to open
   // Initialize all hardware
-  // initPins();
+ 
 
 
   connectToWiFi();
@@ -105,47 +106,6 @@ void setup() {
 }
 
 void loop() {
-  // if (!client.connected()) reconnect();
-  // client.loop();
-
-  // // Simulate status update every 10s
-  // static unsigned long lastStatus = 0;
-  // if (millis() - lastStatus > 10000) { //10s
-  //   SmartMessage statusMsg;
-  //   statusMsg.header = {
-  //     "care_001",
-  //     "abc123",
-  //     "status",
-  //     "operation",
-  //     "2025-04-10T08:00:00Z",
-  //     "1.0"
-  //   };
-  //   statusMsg.payload.status = {
-  //     "operation",
-  //     "success",
-  //     "sched_0001",
-  //     {{1, 5}}, // stock_remaining: box 1 has 5 left
-  //     87,
-  //     "2025-04-10T08:00:05Z"
-  //   };
-
-  //   String json = SmartMedicineReminder::toJson(statusMsg);
-  //   // String json = "testing publish";
-  //   Serial.print("JSON length: ");
-  //   Serial.println(json.length());
-  //   if (client.publish("care/device/abc123/status", json.c_str())) {
-  //       Serial.println("✅ Published to HiveMQ!");
-  //     } else {
-  //       Serial.println("❌ Publish failed!");
-  //     }
-      
-  //   // Serial.println("Published device status:");
-  //   Serial.println(json);
-
-  //   lastStatus = millis();
-  // }
-
-
 
 
   mqttLoop();
@@ -153,7 +113,7 @@ void loop() {
   publishStatusPeriodically();
   //toggleLEDNonBlocking(LED_BUILTIN, 500); // Toggle LED every 500ms
   commandConfirmationBlink(LED_BUILTIN, &cmdConfirmFlag); // Blink LED for command confirmation
-  // FSMDevice::update();     // Update FSM state machine
+  FSMDevice::update();     // Update FSM state machine
 
   // // User acknowledgment button
   // if (digitalRead(12) == HIGH) {

@@ -6,6 +6,7 @@ void initPins() {
   pinMode(DISPENSER_MOTOR_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(USER_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT); // Initialize built-in LED for status indication
   Serial.println("✅ Device hardware initialized.");
   delay(1000); // Allow time for setup
 }

@@ -2,13 +2,13 @@
 #define PINMAP_H
 
 // Motor control for pill dispenser
-#define DISPENSER_MOTOR_PIN     5
+#define DISPENSER_MOTOR_PIN    23
 
 // Buzzer to alert user
-#define BUZZER_PIN              6
+#define BUZZER_PIN             22
 
 // User button to acknowledge or confirm
-#define USER_BUTTON_PIN         12
+#define USER_BUTTON_PIN         21
 
 void initPins();  // Initializes all defined GPIOs
 void toggleLEDNonBlocking(int pin, unsigned long interval);
