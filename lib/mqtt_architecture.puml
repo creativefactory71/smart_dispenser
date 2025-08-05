@@ -1,0 +1,31 @@
+@startuml
+' Use COMPONENT keyword for boxes, ACTOR for user
+
+actor "User\n(Patient/Family)" as user #lightblue
+component "Mobile App\n(Android/iOS/Web)" as app
+component "MQTT Broker\n(HiveMQ Cloud)" as broker
+component "Care Device\n(ESP32/Dispenser)" as device
+component "Backend Server\n(Optional, Analytics, Log)" as backend
+
+user --> app : Schedules,\ncommands,\nrefill
+app --> broker : Publishes:\n- schedule\n- config\n- refill
+broker --> device : Delivers topics
+device --> broker : Publishes:\n- status\n- config_ack\n- refill_ack
+broker --> app : Forwards status,\nacks
+backend ..> broker : (optional)\nsubscribe\nto all status
+
+note right of app
+  Publishes to:\ncare/device/<device_id>/schedule\ncare/device/<device_id>/config\ncare/device/<device_id>/refill
+  Subscribes to:\ncare/device/<device_id>/status
+end note
+
+note right of device
+  Publishes to:\ncare/device/<device_id>/status\ncare/device/<device_id>/config/ack\ncare/device/<device_id>/refill/ack
+  Subscribes to:\ncare/device/<device_id>/schedule\ncare/device/<device_id>/config\ncare/device/<device_id>/refill
+end note
+
+note right of backend
+  (Optional) subscribes to care/device/+/status for analytics/log
+end note
+
+@enduml

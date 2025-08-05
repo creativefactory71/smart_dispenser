@@ -6,5 +6,5 @@ extern volatile bool cmdConfirmFlag; // Set this to true whenever you want to bl
 void setupMQTT();
 void mqttLoop();
 void publishStatusPeriodically();
-
+void setDeviceClock(String iso8601);
 #endif
